@@ -70,7 +70,7 @@ class InlineHelper
 
         // using is_numeric in favor to is_int
         // due to some rare cases where uids are provided as strings
-        if(!is_numeric($uid)) {
+        if (!is_numeric($uid)) {
             return;
         }
 
@@ -80,7 +80,7 @@ class InlineHelper
         $storage = $this->storageRepository->load();
         /* @var $fileRepository \TYPO3\CMS\Core\Resource\FileRepository */
         $fileRepository = $objectManager->get("TYPO3\CMS\Core\Resource\FileRepository");
-        $contentFields = array("media", "image", "assets");
+        $contentFields = ["media", "image", "assets"];
         if ($storage[$table]["tca"]) {
             foreach ($storage[$table]["tca"] as $fieldKey => $field) {
                 $contentFields[] = $fieldKey;
@@ -117,7 +117,12 @@ class InlineHelper
                     $elements = $this->getInlineElements($data, $fieldname, $cType, "parentid", $table);
                     $data[$fieldname] = $elements;
                 } elseif ($fieldHelper->getFormType($field["key"], $cType, $table) == "Content") {
-                    $elements = $this->getInlineElements($data, $fieldname, $cType, $fieldname . "_parent", "tt_content", "tt_content");
+                    $elements = $this->getInlineElements($data,
+                        $fieldname,
+                        $cType,
+                        $fieldname . "_parent",
+                        "tt_content",
+                        "tt_content");
                     $data[$fieldname] = $elements;
                 }
             }
@@ -136,7 +141,12 @@ class InlineHelper
      * @return array all irre elements of this attribut
      * @author Benjamin Butschell <bb@webprofil.at>
      */
-    public function getInlineElements($data, $name, $cType, $parentid = "parentid", $parenttable = "tt_content", $childTable = null)
+    public function getInlineElements($data,
+        $name,
+        $cType,
+        $parentid = "parentid",
+        $parenttable = "tt_content",
+        $childTable = null)
     {
         // if the name of the child table is not explicitely given, take field key
         if (!$childTable) {
@@ -176,31 +186,82 @@ class InlineHelper
         // fetching the inline elements
         if ($childTable == "tt_content") {
             $sql = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
-                "*", $childTable, $parentid . " = '" . $parentUid .
+                "*",
+                $childTable,
+                $parentid . " = '" . $parentUid .
                 "' AND sys_language_uid IN (-1," . $sysLangUid . ")"
                 . ' AND ('
                 . $childTable . '.t3ver_wsid=0 OR '
                 . $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
                 . ' AND ' . $childTable . '.pid<>-1'
                 . ')'
-                . $enableFields, "", "sorting"
+                . $enableFields,
+                "",
+                "sorting"
             );
         } else {
-            $sql = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
-                "*", $childTable, $parentid . " = '" . $parentUid .
-                "' AND parenttable = '" . $parenttable .
-                "' AND sys_language_uid IN (-1," . $sysLangUid . ")"
-                . ' AND ('
-                . $childTable . '.t3ver_wsid=0 OR '
-                . $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
-                . ' AND ' . $childTable . '.pid<>-1'
-                . ')'
-                . $enableFields, "", "sorting"
-            );
+            $sql = $this->getSQL($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields);
         }
 
-        // and recursively add them to an array
-        $elements = array();
+
+        $elements = $this->fetchElements($name, $cType, $childTable, $sql);
+
+        if (empty($elements) && $GLOBALS['TSFE']->sys_language_mode == 'content_fallback') {
+
+            $sql = $this->getSQL($parentid,
+                $parenttable,
+                $childTable,
+                $parentUid,
+                $GLOBALS['TSFE']->sys_language_content,
+                $enableFields);
+
+
+            $elements = $this->fetchElements($name, $cType, $childTable, $sql);
+        }
+
+
+        return $elements;
+    }
+
+    /**
+     * @param $parentid
+     * @param $parenttable
+     * @param $childTable
+     * @param $parentUid
+     * @param $sysLangUid
+     * @param $enableFields
+     * @return mixed
+     */
+    protected function getSQL($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
+    {
+        return $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
+            "*",
+            $childTable,
+            $parentid . " = '" . $parentUid .
+            "' AND parenttable = '" . $parenttable .
+            "' AND sys_language_uid IN (-1," . $sysLangUid . ")"
+            . ' AND ('
+            . $childTable . '.t3ver_wsid=0 OR '
+            . $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
+            . ' AND ' . $childTable . '.pid<>-1'
+            . ')'
+            . $enableFields,
+            "",
+            "sorting"
+        );
+    }
+
+    /**
+     * and recursively add them to an array
+     * @param $name
+     * @param $cType
+     * @param $childTable
+     * @param $sql
+     * @return array
+     */
+    protected function fetchElements($name, $cType, $childTable, $sql)
+    {
+        $elements = [];
         while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($sql)) {
             if (TYPO3_MODE == 'FE') {
                 $GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
@@ -213,7 +274,6 @@ class InlineHelper
                 $elements[$element['uid']] = $element;
             }
         }
-
         return $elements;
     }
 }
