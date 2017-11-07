@@ -72,7 +72,7 @@ class InlineHelper
 
         // using is_numeric in favor to is_int
         // due to some rare cases where uids are provided as strings
-        if (!is_numeric($uid)) {
+        if(!is_numeric($uid)) {
             return;
         }
 
@@ -82,7 +82,7 @@ class InlineHelper
         $storage = $this->storageRepository->load();
         /* @var $fileRepository \TYPO3\CMS\Core\Resource\FileRepository */
         $fileRepository = $objectManager->get("TYPO3\CMS\Core\Resource\FileRepository");
-        $contentFields = ["media", "image", "assets"];
+        $contentFields = array("media", "image", "assets");
         if ($storage[$table]["tca"]) {
             foreach ($storage[$table]["tca"] as $fieldKey => $field) {
                 $contentFields[] = $fieldKey;
@@ -276,6 +276,7 @@ class InlineHelper
                 $elements[$element['uid']] = $element;
             }
         }
+
         return $elements;
     }
 }
