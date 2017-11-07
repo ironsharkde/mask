@@ -117,12 +117,7 @@ class InlineHelper
                     $elements = $this->getInlineElements($data, $fieldname, $cType, "parentid", $table);
                     $data[$fieldname] = $elements;
                 } elseif ($fieldHelper->getFormType($field["key"], $cType, $table) == "Content") {
-                    $elements = $this->getInlineElements($data,
-                        $fieldname,
-                        $cType,
-                        $fieldname . "_parent",
-                        "tt_content",
-                        "tt_content");
+                    $elements = $this->getInlineElements($data, $fieldname, $cType, $fieldname . "_parent", "tt_content", "tt_content");
                     $data[$fieldname] = $elements;
                 }
             }
@@ -141,12 +136,7 @@ class InlineHelper
      * @return array all irre elements of this attribut
      * @author Benjamin Butschell <bb@webprofil.at>
      */
-    public function getInlineElements($data,
-        $name,
-        $cType,
-        $parentid = "parentid",
-        $parenttable = "tt_content",
-        $childTable = null)
+    public function getInlineElements($data, $name, $cType, $parentid = "parentid", $parenttable = "tt_content", $childTable = null)
     {
         // if the name of the child table is not explicitely given, take field key
         if (!$childTable) {
@@ -185,7 +175,7 @@ class InlineHelper
 
         // fetching the inline elements
         if ($childTable == "tt_content") {
-            $sql = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
+            $queryResult = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
                 "*",
                 $childTable,
                 $parentid . " = '" . $parentUid .
@@ -200,15 +190,14 @@ class InlineHelper
                 "sorting"
             );
         } else {
-            $sql = $this->getSQL($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields);
+            $queryResult = $this->getQueryReslut($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields);
         }
 
-
-        $elements = $this->fetchElements($name, $cType, $childTable, $sql);
+        $elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
 
         if (empty($elements) && $GLOBALS['TSFE']->sys_language_mode == 'content_fallback') {
 
-            $sql = $this->getSQL($parentid,
+            $queryResult = $this->getQueryReslut($parentid,
                 $parenttable,
                 $childTable,
                 $parentUid,
@@ -216,7 +205,7 @@ class InlineHelper
                 $enableFields);
 
 
-            $elements = $this->fetchElements($name, $cType, $childTable, $sql);
+            $elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
         }
 
 
@@ -230,9 +219,9 @@ class InlineHelper
      * @param $parentUid
      * @param $sysLangUid
      * @param $enableFields
-     * @return string
+	 * @return bool|\mysqli_result|object MySQLi result object / DBAL object
      */
-    protected function getSQL($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
+    protected function getQueryReslut($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
     {
         return $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
             "*",
