@@ -26,8 +26,6 @@ namespace MASK\Mask\Helper;
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
 
-use TYPO3\CMS\Backend\Utility\BackendUtility;
-
 /**
  * Methods for working with inline fields (IRRE)
  *
@@ -268,7 +266,7 @@ class InlineHelper
             if (TYPO3_MODE == 'FE') {
                 $GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
             } else {
-                $element = BackendUtility::getRecordWSOL($childTable, $element['uid']);
+                $element = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordWSOL($childTable, $element['uid']);
             }
             if ($element && empty($elements[$element['uid']])) {
                 $this->addIrreToData($element, $name, $cType);
