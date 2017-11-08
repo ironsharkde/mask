@@ -186,7 +186,7 @@ class InlineHelper
                 . $enableFields, "", "sorting"
             );
         } else {
-            $queryResult = $this->getQueryReslut(
+            $queryResult = $this->getQueryResult(
                 $parentid,
                 $parenttable,
                 $childTable,
@@ -201,7 +201,7 @@ class InlineHelper
 
         if (empty($elements) && $GLOBALS['TSFE']->sys_language_mode == 'content_fallback') {
 
-            $queryResult = $this->getQueryReslut(
+            $queryResult = $this->getQueryResult(
                 $parentid,
                 $parenttable,
                 $childTable,
@@ -252,7 +252,7 @@ class InlineHelper
      * @param $enableFields
      * @return bool|\mysqli_result|object MySQLi result object / DBAL object
      */
-    protected function getQueryReslut($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
+    protected function getQueryResult($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
     {
         return $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
             "*",
