@@ -186,88 +186,88 @@ class InlineHelper
                 . $enableFields, "", "sorting"
             );
         } else {
-			$queryResult = $this->getQueryReslut(
-				$parentid,
-				$parenttable,
-				$childTable,
-				$parentUid,
-				$sysLangUid,
-				$enableFields
-			);
+            $queryResult = $this->getQueryReslut(
+                $parentid,
+                $parenttable,
+                $childTable,
+                $parentUid,
+                $sysLangUid,
+                $enableFields
+            );
         }
 
         // and recursively add them to an array
-		$elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
+        $elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
 
-		if (empty($elements) && $GLOBALS['TSFE']->sys_language_mode == 'content_fallback') {
+        if (empty($elements) && $GLOBALS['TSFE']->sys_language_mode == 'content_fallback') {
 
-			$queryResult = $this->getQueryReslut(
-				$parentid,
-				$parenttable,
-				$childTable,
-				$parentUid,
-				$GLOBALS['TSFE']->sys_language_content,
-				$enableFields
-			);
+            $queryResult = $this->getQueryReslut(
+                $parentid,
+                $parenttable,
+                $childTable,
+                $parentUid,
+                $GLOBALS['TSFE']->sys_language_content,
+                $enableFields
+            );
 
-			$elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
-		}
+            $elements = $this->fetchElements($name, $cType, $childTable, $queryResult);
+        }
 
         return $elements;
     }
 
-	/**
-	 * and recursively add them to an array
-	 * @param $name
-	 * @param $cType
-	 * @param $childTable
-	 * @param $sql
-	 * @return array
-	 */
-	protected function fetchElements($name, $cType, $childTable, $sql)
-	{
-		$elements = [];
-		while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($sql)) {
-			if (TYPO3_MODE == 'FE') {
-				$GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
-			} else {
-				$element = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordWSOL($childTable, $element['uid']);
-			}
-			if ($element && empty($elements[$element['uid']])) {
-				$this->addIrreToData($element, $name, $cType);
-				$this->addFilesToData($element, $name);
-				$elements[$element['uid']] = $element;
-			}
-		}
+    /**
+     * and recursively add them to an array
+     * @param $name
+     * @param $cType
+     * @param $childTable
+     * @param $sql
+     * @return array
+     */
+    protected function fetchElements($name, $cType, $childTable, $sql)
+    {
+        $elements = [];
+        while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($sql)) {
+            if (TYPO3_MODE == 'FE') {
+                $GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
+            } else {
+                $element = \TYPO3\CMS\Backend\Utility\BackendUtility::getRecordWSOL($childTable, $element['uid']);
+            }
+            if ($element && empty($elements[$element['uid']])) {
+                $this->addIrreToData($element, $name, $cType);
+                $this->addFilesToData($element, $name);
+                $elements[$element['uid']] = $element;
+            }
+        }
 
-		return $elements;
-	}
+        return $elements;
+    }
 
-	/**
-	 * @param $parentid
-	 * @param $parenttable
-	 * @param $childTable
-	 * @param $parentUid
-	 * @param $sysLangUid
-	 * @param $enableFields
-	 * @return bool|\mysqli_result|object MySQLi result object / DBAL object
-	 */
-	protected function getQueryReslut($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
-	{
-		return $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
-			"*",
-			$childTable,
-			$parentid . " = '" . $parentUid .
-			"' AND parenttable = '" . $parenttable .
-			"' AND sys_language_uid IN (-1," . $sysLangUid . ")"
-			. ' AND ('
-			. $childTable . '.t3ver_wsid=0 OR '
-			. $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
-			. ' AND ' . $childTable . '.pid<>-1'
-			. ')'
-			. $enableFields,
-			"",
-			"sorting"
-		);
-	}
+    /**
+     * @param $parentid
+     * @param $parenttable
+     * @param $childTable
+     * @param $parentUid
+     * @param $sysLangUid
+     * @param $enableFields
+     * @return bool|\mysqli_result|object MySQLi result object / DBAL object
+     */
+    protected function getQueryReslut($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
+    {
+        return $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
+            "*",
+            $childTable,
+            $parentid . " = '" . $parentUid .
+            "' AND parenttable = '" . $parenttable .
+            "' AND sys_language_uid IN (-1," . $sysLangUid . ")"
+            . ' AND ('
+            . $childTable . '.t3ver_wsid=0 OR '
+            . $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
+            . ' AND ' . $childTable . '.pid<>-1'
+            . ')'
+            . $enableFields,
+            "",
+            "sorting"
+        );
+    }
 }
