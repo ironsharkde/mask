@@ -221,13 +221,17 @@ class InlineHelper
      * @param $name
      * @param $cType
      * @param $childTable
-     * @param $sql
+     * @param $queryResult
      * @return array
      */
-    protected function fetchElements($name, $cType, $childTable, $sql)
+    protected function fetchElements($name, $cType, $childTable, $queryResult)
     {
+        if ($queryResult->num_rows) {
+            return [];
+        }
+
         $elements = [];
-        while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($sql)) {
+        while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($queryResult)) {
             if (TYPO3_MODE == 'FE') {
                 $GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
             } else {
