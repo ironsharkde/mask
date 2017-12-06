@@ -26,6 +26,8 @@ namespace MASK\Mask\Helper;
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
 
+use mysqli_result;
+
 /**
  * Methods for working with inline fields (IRRE)
  *
@@ -221,12 +223,12 @@ class InlineHelper
      * @param $name
      * @param $cType
      * @param $childTable
-     * @param $queryResult
+     * @param mysqli_result $queryResult
      * @return array
      */
-    protected function fetchElements($name, $cType, $childTable, $queryResult)
+    protected function fetchElements($name, $cType, $childTable, mysqli_result $queryResult)
     {
-        if ($queryResult->num_rows) {
+        if (!$queryResult->num_rows) {
             return [];
         }
 
@@ -254,7 +256,7 @@ class InlineHelper
      * @param $parentUid
      * @param $sysLangUid
      * @param $enableFields
-     * @return bool|\mysqli_result|object MySQLi result object / DBAL object
+     * @return bool|mysqli_result|object MySQLi result object / DBAL object
      */
     protected function getQueryResult($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
     {
