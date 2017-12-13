@@ -26,6 +26,8 @@ namespace MASK\Mask\Helper;
  *  This copyright notice MUST APPEAR in all copies of the script!
  * ************************************************************* */
 
+use mysqli_result;
+
 /**
  * Methods for working with inline fields (IRRE)
  *
@@ -221,13 +223,17 @@ class InlineHelper
      * @param $name
      * @param $cType
      * @param $childTable
-     * @param $sql
+     * @param mysqli_result $queryResult
      * @return array
      */
-    protected function fetchElements($name, $cType, $childTable, $sql)
+    protected function fetchElements($name, $cType, $childTable, mysqli_result $queryResult)
     {
+        if (!$queryResult->num_rows) {
+            return [];
+        }
+
         $elements = [];
-        while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($sql)) {
+        while ($element = $GLOBALS["TYPO3_DB"]->sql_fetch_assoc($queryResult)) {
             if (TYPO3_MODE == 'FE') {
                 $GLOBALS['TSFE']->sys_page->versionOL($childTable, $element);
             } else {
@@ -250,7 +256,7 @@ class InlineHelper
      * @param $parentUid
      * @param $sysLangUid
      * @param $enableFields
-     * @return bool|\mysqli_result|object MySQLi result object / DBAL object
+     * @return bool|mysqli_result|object MySQLi result object / DBAL object
      */
     protected function getQueryResult($parentid, $parenttable, $childTable, $parentUid, $sysLangUid, $enableFields)
     {
