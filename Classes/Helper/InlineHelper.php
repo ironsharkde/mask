@@ -228,7 +228,7 @@ class InlineHelper
      */
     protected function fetchElements($name, $cType, $childTable, $queryResult)
     {
-        if (!$queryResult->num_rows) {
+        if (!$queryResult || !$queryResult->num_rows) {
             return [];
         }
 
