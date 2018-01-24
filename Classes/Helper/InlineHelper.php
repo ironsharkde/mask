@@ -187,6 +187,18 @@ class InlineHelper
                 . ')'
                 . $enableFields, "", "sorting"
             );
+            if (!$queryResult->num_rows) {
+                $queryResult = $GLOBALS["TYPO3_DB"]->exec_SELECTquery(
+                    "*", $childTable, $parentid . " = '" . $parentUid .
+                    "' AND sys_language_uid IN (-1," . $GLOBALS['TSFE']->sys_language_content . ")"
+                    . ' AND ('
+                    . $childTable . '.t3ver_wsid=0 OR '
+                    . $childTable . '.t3ver_wsid=' . (int)$GLOBALS['BE_USER']->workspace
+                    . ' AND ' . $childTable . '.pid<>-1'
+                    . ')'
+                    . $enableFields, "", "sorting"
+                );
+            }
         } else {
             $queryResult = $this->getQueryResult(
                 $parentid,
