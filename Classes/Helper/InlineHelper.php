@@ -235,10 +235,10 @@ class InlineHelper
      * @param $name
      * @param $cType
      * @param $childTable
-     * @param mysqli_result $queryResult
+     * @param $queryResult
      * @return array
      */
-    protected function fetchElements($name, $cType, $childTable, mysqli_result $queryResult)
+    protected function fetchElements($name, $cType, $childTable, $queryResult)
     {
         if (!$queryResult->num_rows) {
             return [];
